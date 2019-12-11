@@ -5,6 +5,7 @@ const PORT = process.env.PORT || 3000;
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const superagent = require('superagent');
 
 
 // dotenv is configuration
@@ -19,9 +20,16 @@ app.get('/weather', getWeather);
 
 //  Request the query input and send the data
 function getLocation(request, response){
-  const locationData = geoCoord(request.query.data || 'Lynnwood, WA, USA');
-  response.send(locationData);
-}
+  console.log(request.query.data);
+  superagent.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODING_API_KEY}`).then(result => {
+    const location = new Location (request.query.data, result);
+    response.send(location);
+    })
+    .catch(err => handleError(err, response));
+  }
+  // const locationData = geoCoord(request.query.data || 'Lynnwood, WA, USA');
+  // response.send(locationData);
+
 
 function getWeather(request, response){
   const weatherData = searchWeather(request.query.data || 'Lynnwood, WA, USA');
@@ -32,10 +40,11 @@ function getWeather(request, response){
 
 
 // Constructors for saving the variable
-function Location (location) {
-  this.formatted_query = location.formatted_address;
-  this.latitude = location.geometry.location.lat;
-  this.longitude= location.geometry.location.lng;
+function Location (query, response) {
+  this.search_query = query;
+  this.formatted_query = response.body.results[0].formatted_address;
+  this.latitude = response.body.results[0].geometry.location.lat;
+  this.longitude= response.body.results[0].geometry.location.lng;
 }
 
 
@@ -64,9 +73,10 @@ function searchWeather(query){{
 
 
 // Error Handler
-app.get('/*', function(request, response){
-  response.status(404).send('Sorry, error 404.  It is not our fault, it is yours')
-})
+function handleError(err, response) {
+  console.log(err);
+  if (response) response.status(500).send('Sorry something went wrong');
+}
 
 
 
