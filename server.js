@@ -56,8 +56,7 @@ function geoCoord(query){
 function searchWeather(query){{
   let darkSkyData = require('./data/darksky.json');
   console.log(darkSkyData);
-  let weatherArray = [];
-  darkSkyData.daily.data.forEach(forecast => weatherArray.push(new Daily(forecast)));
+  let weatherArray = darkSkyData.daily.data.map(forecast => (new Daily(forecast)));
   console.log(weatherArray);
   return weatherArray;
 }}
