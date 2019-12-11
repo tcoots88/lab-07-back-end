@@ -15,7 +15,7 @@ app.get('/location', getLocation);
 app.get('/weather', getWeather);
 
 
-
+//  Request the query input and send the data
 function getLocation(request, response){
   const locationData = geoCoord(request.query.data || 'Lynnwood, WA, USA');
   response.send(locationData);
@@ -28,6 +28,8 @@ function getWeather(request, response){
 }
 
 
+
+// Constructors for saving the variable
 function Location (location) {
   this.formatted_query = location.formatted_address;
   this.latitude = location.geometry.location.lat;
@@ -42,7 +44,7 @@ function Daily(dailyForecast){
 }
 
 
-
+// functions to pull data from JSON
 function geoCoord(query){
   const geoData = require('./data/geo.json');
   const location = new Location(geoData.results[0]);
@@ -59,6 +61,7 @@ function searchWeather(query){{
 }}
 
 
+
 // Error Handler
 app.get('/*', function(request, response){
   response.status(404).send('Sorry')
@@ -66,7 +69,7 @@ app.get('/*', function(request, response){
 
 
 
-
+// telling to listen for the PORT and display to ensure that the port is running
 app.listen(PORT, () => {
   console.log(`app is running on PORT: ${PORT}`);
 
