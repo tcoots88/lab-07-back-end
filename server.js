@@ -31,11 +31,34 @@ function getLocation(request, response){
   // response.send(locationData);
 
 
-function getWeather(request, response){
-  const weatherData = searchWeather(request.query.data || 'Lynnwood, WA, USA');
-  response.send(weatherData);
 
+  
+// function is not operational in it's current state.  Returns errors down below
+
+// TypeError: Cannot read property 'formatted_address' of undefined
+//     at new Location (C:\Users\Coots\Desktop\Codefellows\301d60\lab-07-back-end\server.js:53:51)
+//     at C:\Users\Coots\Desktop\Codefellows\301d60\lab-07-back-end\server.js:25:22
+//     at processTicksAndRejections (internal/process/task_queues.js:93:5)
+// seattle
+// TypeError: Cannot read property 'formatted_address' of undefined
+//     at new Location (C:\Users\Coots\Desktop\Codefellows\301d60\lab-07-back-end\server.js:53:51)
+//     at C:\Users\Coots\Desktop\Codefellows\301d60\lab-07-back-end\server.js:25:22
+//     at processTicksAndRejections (internal/process/task_queues.js:93:5)
+
+
+function getWeather(request, response){
+  superagent.get(`https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${request.query.data.latitude}, ${request.query.data.longitude}`).then(result => {
+    const hawa = new Daily (request.query.data, result);
+    console.log('hawa', hawa);
+    response.send(hawa);
+  })
+  .catch(err => handleError(err, response));
 }
+
+  // const weatherData = searchWeather(request.query.data || 'Lynnwood, WA, USA');
+  // response.send(weatherData);
+
+
 
 
 
