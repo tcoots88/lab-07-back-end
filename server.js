@@ -1,10 +1,12 @@
 'use strict';
 
+// Dependencies 
 const PORT = process.env.PORT || 3000;
 const express = require('express');
 const cors = require('cors');
-
 const app = express();
+
+
 // dotenv is configuration
 require('dotenv').config();
 
