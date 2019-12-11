@@ -64,7 +64,7 @@ function searchWeather(query){{
 
 // Error Handler
 app.get('/*', function(request, response){
-  response.status(404).send('Sorry')
+  response.status(404).send('Sorry, error 404.  It is not our fault, it is yours')
 })
 
 
