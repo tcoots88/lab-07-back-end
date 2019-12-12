@@ -29,6 +29,7 @@ function getLocation(request, response) {
 }
 
 
+
 function getWeather(request, response) {
   superagent.get(`https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${request.query.data.latitude},${request.query.data.longitude}`).then(result => {
     const weatherArr = result.body.daily.data
