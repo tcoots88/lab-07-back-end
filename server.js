@@ -1,6 +1,6 @@
 'use strict';
 
-// Dependencies 
+// Dependencies
 const PORT = process.env.PORT || 3000;
 const express = require('express');
 const cors = require('cors');
@@ -16,84 +16,85 @@ app.use(cors());
 
 app.get('/location', getLocation);
 app.get('/weather', getWeather);
-
+app.get('/events', getEvents);
 
 //  Request the query input and send the data
-function getLocation(request, response){
+function getLocation(request, response) {
   console.log(request.query.data);
   superagent.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODING_API_KEY}`).then(result => {
-    const location = new Location (request.query.data, result);
+    const location = new Location(request.query.data, result);
     response.send(location);
-    })
-    .catch(err => handleError(err, response));
-  }
-  // const locationData = geoCoord(request.query.data || 'Lynnwood, WA, USA');
-  // response.send(locationData);
-
-
-
-  
-// function is not operational in it's current state.  Returns errors down below
-
-// TypeError: Cannot read property 'formatted_address' of undefined
-//     at new Location (C:\Users\Coots\Desktop\Codefellows\301d60\lab-07-back-end\server.js:53:51)
-//     at C:\Users\Coots\Desktop\Codefellows\301d60\lab-07-back-end\server.js:25:22
-//     at processTicksAndRejections (internal/process/task_queues.js:93:5)
-// seattle
-// TypeError: Cannot read property 'formatted_address' of undefined
-//     at new Location (C:\Users\Coots\Desktop\Codefellows\301d60\lab-07-back-end\server.js:53:51)
-//     at C:\Users\Coots\Desktop\Codefellows\301d60\lab-07-back-end\server.js:25:22
-//     at processTicksAndRejections (internal/process/task_queues.js:93:5)
-
-
-function getWeather(request, response){
-  superagent.get(`https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${request.query.data.latitude}, ${request.query.data.longitude}`).then(result => {
-    const hawa = new Daily (request.query.data, result);
-    console.log('hawa', hawa);
-    response.send(hawa);
   })
-  .catch(err => handleError(err, response));
+    .catch(err => handleError(err, response));
 }
 
-  // const weatherData = searchWeather(request.query.data || 'Lynnwood, WA, USA');
-  // response.send(weatherData);
 
 
-
-
+function getWeather(request, response) {
+  superagent.get(`https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${request.query.data.latitude},${request.query.data.longitude}`).then(result => {
+    const weatherArr = result.body.daily.data
+    const reply = weatherArr.map(byDay => {
+      return new Daily(byDay);
+    })
+    response.send(reply);
+  })
+    .catch(err => handleError(err, response));
+}
 
 // Constructors for saving the variable
-function Location (query, response) {
+function Location(query, response) {
   this.search_query = query;
   this.formatted_query = response.body.results[0].formatted_address;
   this.latitude = response.body.results[0].geometry.location.lat;
-  this.longitude= response.body.results[0].geometry.location.lng;
+  this.longitude = response.body.results[0].geometry.location.lng;
 }
 
-
-
-function Daily(dailyForecast){
+function Daily(dailyForecast) {
+  console.log(dailyForecast);
   this.forecast = dailyForecast.summary;
   this.time = new Date(dailyForecast.time * 1000).toDateString();
 }
 
 
 // functions to pull data from JSON
-function geoCoord(query){
-  const geoData = require('./data/geo.json');
-  const location = new Location(geoData.results[0]);
-  return location;
+// function geoCoord(query) {
+//   const geoData = require('./data/geo.json');
+//   const location = new Location(geoData.results[0]);
+//   return location;
+// }
+
+// function searchWeather(query) {
+//   {
+//     let darkSkyData = require('./data/darksky.json');
+//     console.log(darkSkyData);
+//     let weatherArray = darkSkyData.daily.data.map(forecast => (new Daily(forecast)));
+//     console.log(weatherArray);
+//     return weatherArray;
+//   }
+// }
+
+function getEvents(request, response) {
+  // console.log(request.query);
+  // console.log(response);
+  // go to eventful, get data and get it to look like this
+  superagent.get(`http://api.eventful.com/json/events/search?where=${request.query.data.latitude},${request.query.data.longitude}&within=25&app_key=${process.env.EVENTBRITE_API_KEY}`).then(data => {
+    // console.log(JSON.parse(data.text).events.event[0]);
+    const allEvents = JSON.parse(data.text).events.event;
+
+    const allData = allEvents.map(event => {
+      return {
+        'link': event.url,
+        'name': event.title,
+        'event_date': event.start_time,
+        'summary': event.description
+      };
+    });
+
+    response.send(allData);
+
+  });
+
 }
-
-function searchWeather(query){{
-  let darkSkyData = require('./data/darksky.json');
-  console.log(darkSkyData);
-  let weatherArray = darkSkyData.daily.data.map(forecast => (new Daily(forecast)));
-  console.log(weatherArray);
-  return weatherArray;
-}}
-
-
 
 // Error Handler
 function handleError(err, response) {
@@ -108,4 +109,4 @@ app.listen(PORT, () => {
   console.log(`app is running on PORT: ${PORT}`);
 
 
-});
+})
